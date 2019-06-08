@@ -16,7 +16,6 @@ class LexRank:
         keep_emails=False,
         keep_urls=False,
         include_new_words=True,
-        redunduncy_penalty = False,
     ):
         if stopwords is None:
             self.stopwords = set()
@@ -27,7 +26,6 @@ class LexRank:
         self.keep_emails = keep_emails
         self.keep_urls = keep_urls
         self.include_new_words = include_new_words
-        self.redunduncy_penalty = redunduncy_penalty
 
         self.idf_score = self._calculate_idf(documents)
 
@@ -37,6 +35,7 @@ class LexRank:
         summary_size=1,
         threshold=.03,
         fast_power_method=True,
+        redunduncy_penalty = False,
         include_keyphrase_similarity = False,
         keyphrase_similarity_scores = 0,
         d = 0,
@@ -50,39 +49,21 @@ class LexRank:
             fast_power_method=fast_power_method,
         )
         if include_keyphrase_similarity:
-            print('here!')
-            new_lex_scores = [d * keyphrase_similarity_scores[i] + (1-d) * lex_scores[i] for i in range(len(sentences))]
-            lex_scores = new_lex_scores
-            sorted_ix = np.argsort(lex_scores)[::-1]
-            print(lex_scores[:5])
-            print(sorted_ix[:5])
-            for arg in sorted_ix[:5]:
-                print(lex_scores[arg])
-                print(sentences[arg])
-            # print(sorted_ix[:5])
-            # print(new_sorted_ix[:5])
-
-            summary = [sentences[i] for i in sorted_ix[:summary_size]]
-
-            if self.redunduncy_penalty:
-                allSentences = [sentences[i] for i in sorted_ix]
-                S2 = [(sentences[i], len(allSentences) - i) for i in range(len(allSentences))]
-                summary = self.addRedunduncyPenalty(S2, summary_size)
-            print(len(summary))
-            return summary
+            lex_scores = [d * keyphrase_similarity_scores[i] + (1-d) * lex_scores[i] for i in range(len(sentences))]
 
         sorted_ix = np.argsort(lex_scores)[::-1]
-        # new_sorted_ix = np.argsort(new_lex_scores)[::-1]
-        # print(new_lex_scores[:5])
-        # print(lex_scores[:5])
-        # print(sorted_ix[:5])
-        # print(new_sorted_ix[:5])
+        # summary = [sentences[i] for i in sorted_ix[:summary_size]]
+        summary = []
+        sizeWords = 0
+        for i in sorted_ix:
+            sizeWords += len(sentences[i].split())
+            if sizeWords >= summary_size:
+                break
+            summary.append(sentences[i])
 
-        summary = [sentences[i] for i in sorted_ix[:summary_size]]
-
-        if self.redunduncy_penalty:
-            allSentences = [sentences[i] for i in sorted_ix]
-            S2 = [(sentences[i], len(allSentences) - i) for i in range(len(allSentences))]
+        if redunduncy_penalty:
+            S2 = [(sentences[i], lex_scores[i]) for i in sorted_ix]
+            # S2 = [(allSentences[i], len(allSentences) - i) for i in range(len(allSentences))]
             summary = self.addRedunduncyPenalty(S2, summary_size)
 
         return summary
@@ -90,14 +71,18 @@ class LexRank:
     def addRedunduncyPenalty(self, sentenceRanking, summary_size):
         S2 = sentenceRanking
         S1 = []
-        while (len(S2) != 0 and len(S1) < summary_size):
+        sizeWords = 0
+        # while (len(S2) != 0 and len(S1) < summary_size):
+        while (len(S2) != 0 and sizeWords < summary_size):
             S2 = sorted(S2, key = lambda x: x[1] ,reverse=True)
             curr = S2.pop(0)
             S1.append(curr)
+            sizeWords += len(curr[0].split())
             newS2 = []
             for (sentence, rank) in S2:
                 newRank = rank - curr[1] * self.sentences_similarity(curr[0], sentence)
                 newS2.append((sentence, newRank))
+            S2 = newS2
         summaryRankedSentences = sorted(S1, key = lambda x: x[1] ,reverse=True)
         summary = [sentence for (sentence, rank) in summaryRankedSentences]
         return summary
