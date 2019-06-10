@@ -42,7 +42,7 @@ for root, dirs, files in os.walk(text_dir):
 
             sentences = tokenizer.tokenize(f.read())
 
-            summarySentences = lxr.get_summary(sentences, summary_size=100, threshold=None, include_keyphrase_similarity = False, redunduncy_penalty = True)
+            summarySentences = lxr.get_summary(sentences, summary_size=6, threshold=None, include_keyphrase_similarity = False, redunduncy_penalty = True)
 
             producedSummary = ' '.join(summarySentences)
 

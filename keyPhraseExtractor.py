@@ -120,7 +120,6 @@ class KeyPhraseExtractor:
                 keyphrase_scores.append(count)
             return keyphrase_scores
         if approach == 2:
-            # could also try average of cosine similarity rather than adding them up
             keyphrase_scores = []
             keyphrases = self.getKeyPhrases(text_file_path)
             if withSynonyms:
