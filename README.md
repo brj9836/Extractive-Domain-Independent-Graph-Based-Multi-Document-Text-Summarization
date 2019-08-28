@@ -2,7 +2,7 @@
 
 This is my final project for CS 224U at Stanford University.
 
-Here is an explanation of what each file is meant for:
+This repository includes:
 * baselineMultiDocument.py => an implementation of the baseline model for multi-document summarization. The baseline is simply LexRank.
 * baselineSingleDocument.py => an implementation of the baseline model for single-document summarization. The baseline is simply LexRank.
 * cleanAndPreprocess.py => code I used to clean and preprocess the data. The data I used was taken from DUC 2003 and DUC 2004.
